@@ -1,0 +1,221 @@
+---
+title: "RA3 on scATAC data guided by reference data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, include=FALSE}
+library(RA3)
+```
+
+# Installation
+
+# What is RA3?
+
+RA3 is a R/Bioconductor package for the integrative analysis of scATAC-seq data, which could be used to extract effective latent features of single cells for downstream analyses such as visualization, clustering, and trajectory inference. The name RA3 refers to reference-guided analysis of scATAC-seq data. 
+
+RA3 characterizes the high-dimensional sparse scATAC-seq data as three components, including shared biological variation in single-cell and reference data, unique biological variation in single cells that separates distinct or rare cell types from the other cells, and other variations such as technical variation. It could use reference built from bulk ATAC-seq data, bulk DNase-seq data, an accessibility annotation tool (Chen et al., 2019), aggregated scATAC-seq data, etc. 
+
+Borrowing the general framework of probabilistic PCA, RA3 models the observed $p$ features/regions for the $j-$th cell $\mathbf{y}_j \in \mathbb{R}^{p \times 1}$ as folows:
+$$
+\begin{aligned}
+\mathbf{y}_{j} | \boldsymbol{\lambda}_{j} & \sim \mathcal{N}_{p}\left(\boldsymbol{\lambda}_{j}, \sigma^{2} \mathbf{I}_{p}\right) ,\\
+\boldsymbol{\lambda}_{j}=& \boldsymbol{\beta} \mathbf{x}_{j}+\mathbf{W h}_{j}, \boldsymbol{\lambda}_{j} \in \mathbb{R}^{p \times 1}.
+\end{aligned}
+$$
+The columns in $\mathbf{W}$ have similar interpretatiin as the projection vectors in PCA, and $\mathbf{h}_j$ can be interpreted as the low-dimensional representation of $\mathbf{y}_j$. We further decommposes the term $\mathbf{W}\mathbf{h}_j$ into three parts:
+$$
+\mathbf{W h}_{j}=\mathbf{W}_{1} \mathbf{h}_{j_{1}}+\mathbf{W}_{2} \mathbf{h}_{j_{2}}+\mathbf{W}_{3} \mathbf{h}_{j_{3}},
+$$
+where the first part $\mathbf{W}_1\mathbf{h}_{j1} \in \mathbb{R}^{p\times K_1}$ utilizes prior information from the reference data and capture the shared biological variation in scATAC-sec data and reference data; the second part $\mathbf{W}_2\mathbf{h}_{j2} \in \mathbb{R}^{p \times K_2}$ captures the variation unique in scATAC-sec that seperates distinct and rare cell types from the other cells; the third part $\mathbf{W}_3\mathbf{h}_{j3} \in \mathbb{R}^{p \times K_3}$ models other variation such as technical variation.
+
+# Running RA3
+
+In this vignette, we will show two example using RA3 for integrative analysis. Running RA3 uses main function `runRA3`, which consists of 2 main steps: 
+
+1. load data and calculate initializatioin for the model building function `RA3_EM`,
+
+2. run model estimation function `RA3_EM`.
+
+## A. RA3 on scATAC data guided by abundant bulk data
+
+In this example we want to show RA3 could take advantages of abundant bulk data. Here we use scATAC-seq count matrix *donorBM0828_sc_mat* and reference data  *donorBM0828_bulk_mat* included by package RA3. The scATAC-seq data are collected human hematopoietic cells with donor code “BM0828” from the Bone marrow dataset presented in Buenrostro et al., 2018, and bulk data refers to the bulk hematopoietic ATAC-seq samples of four parent types in differentiation tree, including HSC, MPP, LMPP and CMP.
+
+### Input data
+
+First, laod package RA3:
+
+```{r}
+library(RA3)
+```
+
+We would use main function `runRA3()` to estimate a RA3 model, the input data consists of two parts: **sc_data** refering to single cell ATAC-seq data and **ref_data** as reference data. The input data should be **count matrix**. Load data:
+
+```{r}
+sc_data <- donorBM0828_sc_mat
+ref_data <- donorBM0828_bulk_mat
+```
+
+### Building the models
+The main parameters for running function `runRA3`:
+
+* **K2**, **K3** are the number of compomnents contained in the second part $\mathbf{W}_2\mathbf{H}_2$ and third part $\mathbf{W}_3\mathbf{H}_3$ of RA3 model, the default value is set as K2 = 5, K3 = 5.
+
+* **normalize** is a logical indicator for whether the output estimated $\mathbf{W}$ should be normalized through each components, corresponding scale would be mupltiplied to $\mathbf{H}$.
+
+* **ttest** is a logcial indicator deciding whether a one sample t-test should be done for the output estimated $\mathbf{H}_2$, which would select most significantly informative components contained in $\mathbf{H}$.
+
+### Interpreting the models
+To run RA3 model, you only need to run the function `runRA3`:
+
+```{r,eval=TRUE, results='hide', message=FALSE}
+result <- runRA3(sc_data, ref_data)
+```
+
+runRA3 returns a list with estimated parameters and latent vatiables contained in RA3 model:
+
+* **H**: the extracted latent features of single cells for downstream analyses such as visualization, clustering, and trajectory inference.
+
+* **Other Parameters**: **W**, **Beta**, **Gamma**, **A**, **sigma_s** are estimated essential parameters in RA3 model, **lgp** refers to the largest log posterior value when EM algorithm converges.
+
+### Downstream analysis: Visualization
+
+#### Visualization of latent features obtained by PCA and Bulk-projected scores
+
+First we normalize data with TF-IDF by the data-preprocess function `Dataprep` of RA3:
+
+```{r, eval=TRUE}
+data_nml <- Dataprep(sc_data, ref_data)
+sc_data_nml <- data_nml$sc_data
+ref_data_nml <- data_nml$ref_data
+```
+
+To illustrate RA3's effectiveness, we first use PCA to obtain the latent features on the normalized single-cell data, which shows unsatisfactory performance that only slightly separates cells of CLP and MEP from the other cells. 
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+library(ggplot2)
+res_pca <- irlba::irlba(t(sc_data_nml), nv=10)
+score_pca <- res_pca$u %*% diag(res_pca$d)
+pca_tsne <- Rtsne::Rtsne(score_pca)$Y
+pca_tsne <- as.data.frame(pca_tsne)
+colnames(pca_tsne) <- c('tsne1','tsne2')
+cell_label <- donorBM0828_label_mat
+ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 10, position = ggplot2::position_jitter()) + labs(title = "pca tsne")
+
+```
+
+Then we scores each cell by the identified PCs of variation in bulk ATAC-seq samples, and deploy t-SNE directly onto the obtained scores. However, this reference guided approach still can not even distinguish CLP from the other cells while simple PCA can.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+res_bulk <- prcomp(ref_data_nml, center = T, retx = T)
+coeff_bulk <- res_bulk$rotation
+bulk_tsne <- Rtsne::Rtsne(t(sc_data_nml) %*% coeff_bulk)$Y
+bulk_tsne <- as.data.frame(bulk_tsne)
+colnames(bulk_tsne) <- c('tsne1','tsne2')
+ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 10, position = ggplot2::position_jitter()) + labs(title="bulk projection tsne")
+```
+
+#### Visualization of RA3
+
+We use a t-SNE for visualization of the RA3-obtained latent features **H**.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+H_tsne <- Rtsne::Rtsne(t(result$H[1: (nrow(result$H)-5), ]))$Y
+H_tsne <- as.data.frame(H_tsne)
+colnames(H_tsne) <- c('tsne1', 'tsne2')
+ggplot(H_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 10, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne")
+
+```
+
+RA3 introduces a spike-and-slab setting which detects directions that lead to good separation of the cells but not the direction with large variation considering the technical variation is strong. The first sparse component in spike-and-slab setting successfully detects cells of CLP, and RA3 thus achieves superior performance than other reference-guided approaches. An intuitive understanding is that the direction which separates a small number of cells from the rest more likely captures biological variation, given that the rare cell types in single-cell data are likely missing in bulk data.
+
+## B. RA3 on scATAC data guided by aggregating single-cell data
+
+Besides using abundant bulk data as reference, we also display an example which established a pseudo-bulk reference data by averaging single cells of the same ground-truth biological cell type. 
+
+### Input the data
+
+Here we load the already established pseudo-bulkk reference data *forebrain_bulk_mat* as reference data for RA3, and *forebrain_sc_mat* as scATAC-seq count matrix.
+
+```{r, eval=TRUE,message=FALSE,results='hide', fig.height=4, fig.width=5}
+sc_data2 <- forebrain_sc_mat
+ref_data2 <- forebrain_bulk_mat
+```
+### Building and interpreting the models
+
+We use `runRA3()` to establish the model with input data: *forebrain_sc_mat*, *forebrain_bulk_mat* and defaut parameters: K2 = 5, K3 = 5, normalize = TRUE, ttest = TRUE.
+
+```{r, eval=TRUE, results='hide', message=FALSE, fig.height=4, fig.width=5}
+result2 <- runRA3(sc_data2, ref_data2)
+```
+
+runRA3 returns a list with estimated parameters and latent vatiables contained in RA3 model:
+
+* **H**: the extracted latent features of single cells for downstream analyses such as visualization, clustering, and trajectory inference.
+
+* **Other Parameters**: **W**, **Beta**, **Gamma**, **A**, **sigma_s** are estimated essential parameters in RA3 model, **lgp** refers to the largest log posterior value when EM algorithm converges.
+
+### Downstream analysis: Visualization
+
+#### Visualization of latent features obtained by PCA and Bulk-projected scores
+
+First we normalize data with TF-IDF by the data-preprocess function `Dataprep` of RA3:
+
+```{r, eval=TRUE}
+data2 <- Dataprep(sc_data2, ref_data2)
+sc_data2_nml <- data2$sc_data
+ref_data2_nml <- data2$ref_data
+```
+
+We use PCA to obtain the latent features on the normalized single-cell data, the t-SNE visualization is displayed by following:
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+library(ggplot2)
+res2_pca <- irlba::irlba(t(sc_data2_nml), nv=10)
+score2_pca <- res2_pca$u %*% diag(res2_pca$d)
+pca2_tsne <- Rtsne::Rtsne(score2_pca)$Y
+pca2_tsne <- as.data.frame(pca2_tsne)
+colnames(pca2_tsne) <- c('tsne1','tsne2')
+cell_label2 <- forebrain_label_mat
+ggplot(pca2_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label2), shape = 10, position = ggplot2::position_jitter()) + labs(title = "pca tsne")
+
+```
+
+Then we scores each cell by the identified PCs of variation in pseudo-bulk ATAC-seq samples, and deploy t-SNE directly onto the obtaned scores.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+res2_bulk <- prcomp(ref_data2_nml, center = T, retx = T)
+coeff2_bulk <- res2_bulk$rotation
+bulk2_tsne <- Rtsne::Rtsne(t(sc_data2_nml) %*% coeff2_bulk)$Y
+bulk2_tsne <- as.data.frame(bulk2_tsne)
+colnames(bulk2_tsne) <- c('tsne1','tsne2')
+ggplot(bulk2_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label2), shape = 10, position = ggplot2::position_jitter()) + labs(title="bulk projection tsne")
+```
+
+#### Visualization of RA3
+
+Finally, we present the t-SNE visualization of latent features extracted by RA3, guided by the aggregatting single cell data.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+H2_tsne <- Rtsne::Rtsne(t(result2$H[1: (nrow(result2$H)-5), ]))$Y
+H2_tsne <- as.data.frame(H2_tsne)
+colnames(H2_tsne) <- c('tsne1', 'tsne2')
+ggplot(H2_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label2), shape = 10, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne")
+```
+
+# References
+
+1. Chen, S., Wang, Y. & Jiang, R. Openanno: annotating genomic regions with chromatin accessibility. bioRxiv 596627 (2019).
+
+2. Buenrostro, J. D. et al. Integrated single-cell analysis maps the continuous regulatory landscape of human hematopoietic differentiation. Cell 173, 1535–1548 e16 (2018).
+# SessionInfo
