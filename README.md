@@ -16,4 +16,4 @@ This package includes following functions:
 - `RA3_EM` EM algorithm for RA3. This function is implementing an EM algorithm to estimate parameters of RA3 model.
 
 ## Tutorial
-Please check the [vigenette]{https://github.com/cuhklinlab/RA3/tree/master/vignettes} for a tutorial. Two examples are contained for a quick start of RA3.
+Please check the [vigenette](https://github.com/cuhklinlab/RA3/tree/master/vignettes) for a tutorial. Two examples are contained for a quick start of RA3.
