@@ -1,11 +1,12 @@
 # RA3
 RA3 method for integrative analysis of single cell ATAC sequence data.
 
-## Requirements
-
 ## Installation
-
-## Tutorial
+You can install the released version of package Ra3 from Github:
+```javascript
+devtools::install_github("cuhklinlab/RA3")
+```
+## Main funcitons
 
 This package includes following functions:
 - `runRA3` Run RA3 for integrative analysis of scATAC-seq data. 
@@ -13,3 +14,6 @@ This package includes following functions:
   1. Use TF-IDF for matrix normailization,
   2. Select peaks for rough dimension reduction.
 - `RA3_EM` EM algorithm for RA3. This function is implementing an EM algorithm to estimate parameters of RA3 model.
+
+## Tutorial
+Please check the [vigenette]{https://github.com/cuhklinlab/RA3/tree/master/vignettes} for a tutorial. Two examples are contained for a quick start of RA3.
