@@ -19,7 +19,10 @@ library(RA3)
 ```
 
 # Installation
-
+You can install the released version of package Ra3 from Github:
+```javascript
+devtools::install_github("cuhklinlab/RA3")
+```
 # What is RA3?
 
 RA3 is a R/Bioconductor package for the integrative analysis of scATAC-seq data, which could be used to extract effective latent features of single cells for downstream analyses such as visualization, clustering, and trajectory inference. The name RA3 refers to reference-guided analysis of scATAC-seq data. 
