@@ -99,13 +99,11 @@ RA3_EM <- function(Y,normalize,ttest,K1,K2,K3,Gamma,A,W,sigma_s){
     TMP <- Y - Beta %*% X
     Mu_tmp <- t(W) %*% TMP
     for (j in 1:n){
-      # sigma_s <- sigma_s + t(TMP[,j]) %*% TMP[,j] - 2*t(Mu_tmp[,j]) %*% E_h[,j] + psych::tr(E_hh[ , ,j] %*% W_tmp)
       sigma_s <- sigma_s + t(TMP[,j]) %*% TMP[,j] - 2*t(Mu_tmp[,j]) %*% E_h[,j] + sum(E_hh[ , ,j] * t(W_tmp))
     }
     sigma_s <- sigma_s[1] / (p*n)
 
     # Calculate log posterior
-    # Qw[ite] <- - (K2+K3) * p/2 * log(2*pi) + p/2 * psych::tr(log(A)) - 1/2 * psych::tr(A %*% t(W[ ,(K1+1):K]) %*% W[ ,(K1+1):K])
     Qw[ite] <- - (K2+K3) * p/2 * log(2*pi) + p/2 * sum(diag(log(A))) - 1/2 * sum(A %*% t(W[ ,(K1+1):K]) * t(W[ ,(K1+1):K]))
 
     Qgamma[ite] <- sum(Gamma[(K1+1):(K1+K2), ] * log(theta) + (matrix(rep(1,K2*n),K2,n) - Gamma[(K1+1):(K1+K2),]) * log(1-theta))
@@ -120,7 +118,6 @@ RA3_EM <- function(Y,normalize,ttest,K1,K2,K3,Gamma,A,W,sigma_s){
       Sigma_j_inv <- W_s + diag(D_j^(-1))
       Sigma_j <- solve(Sigma_j_inv)
       Mu_j <- 1/sigma_s *  Sigma_j %*% Mu_tmp[ ,j]
-      # cont[j] <- - 1/2 * log(prod(D_j)) - 1/2 * (1/sigma_s * t(TMP[ ,j]) %*% TMP[ ,j] ) + 1/2 * log(det(Sigma_j)) + 1/2 * t(Mu_j) %*% solve(Sigma_j) %*% Mu_j
       cont[j] <- - 1/2 * log(prod(D_j)) - 1/2 * 1/sigma_s * t(TMP[,j]) %*% TMP[,j] + 1/2 * log(det(Sigma_j)) + 1/2 * t(Mu_j) %*% Sigma_j_inv %*% Mu_j
       log_tmp <- log_tmp + cont[j]
     }
@@ -170,5 +167,4 @@ RA3_EM <- function(Y,normalize,ttest,K1,K2,K3,Gamma,A,W,sigma_s){
   return(res)
 }
 
-# Other Functions
-# norm_vec <- function(x) sqrt(sum(x^2))
+
