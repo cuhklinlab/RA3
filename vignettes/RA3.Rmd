@@ -148,7 +148,7 @@ We use a t-SNE for visualization of the RA3-obtained latent features **H**.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 set.seed(23)
-H_tsne <- Rtsne::Rtsne(t(result$H))$Y # Here 5 refers to the dimension of the third component
+H_tsne <- Rtsne::Rtsne(t(result$H))$Y
 H_tsne <- as.data.frame(H_tsne)
 colnames(H_tsne) <- c('tsne1', 'tsne2')
 ggplot(H_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 10, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne")
