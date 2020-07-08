@@ -82,6 +82,7 @@ The main parameters for running function `runRA3`:
 To run RA3 model, you only need to run the function `runRA3`:
 
 ```{r,eval=TRUE, results='hide', message=FALSE}
+set.seed(23)
 result <- runRA3(sc_data, ref_data)
 ```
 
@@ -107,8 +108,10 @@ To illustrate RA3's effectiveness, we first use PCA to obtain the latent feature
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 library(ggplot2)
+#set.seed(2020)
 res_pca <- irlba::irlba(t(sc_data_nml), nv=10)
 score_pca <- res_pca$u %*% diag(res_pca$d)
+set.seed(2020)
 pca_tsne <- Rtsne::Rtsne(score_pca)$Y
 pca_tsne <- as.data.frame(pca_tsne)
 colnames(pca_tsne) <- c('tsne1','tsne2')
@@ -122,6 +125,7 @@ Then we scores each cell by the identified PCs of variation in bulk ATAC-seq sam
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 res_bulk <- prcomp(ref_data_nml, center = T, retx = T)
 coeff_bulk <- res_bulk$rotation
+set.seed(2020)
 bulk_tsne <- Rtsne::Rtsne(t(sc_data_nml) %*% coeff_bulk)$Y
 bulk_tsne <- as.data.frame(bulk_tsne)
 colnames(bulk_tsne) <- c('tsne1','tsne2')
@@ -133,7 +137,8 @@ ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 1
 We use a t-SNE for visualization of the RA3-obtained latent features **H**.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
-H_tsne <- Rtsne::Rtsne(t(result$H[1: (nrow(result$H)-5), ]))$Y
+set.seed(2020)
+H_tsne <- Rtsne::Rtsne(t(result$H[1: (nrow(result$H)-5), ]))$Y # Here 5 refers to the dimension of the third component
 H_tsne <- as.data.frame(H_tsne)
 colnames(H_tsne) <- c('tsne1', 'tsne2')
 ggplot(H_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 10, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne")
@@ -159,6 +164,7 @@ ref_data2 <- forebrain_bulk_mat
 We use `runRA3()` to establish the model with input data: *forebrain_sc_mat*, *forebrain_bulk_mat* and defaut parameters: K2 = 5, K3 = 5, normalize = TRUE, ttest = TRUE.
 
 ```{r, eval=TRUE, results='hide', message=FALSE, fig.height=4, fig.width=5}
+set.seed(23)
 result2 <- runRA3(sc_data2, ref_data2)
 ```
 
@@ -186,6 +192,7 @@ We use PCA to obtain the latent features on the normalized single-cell data, the
 library(ggplot2)
 res2_pca <- irlba::irlba(t(sc_data2_nml), nv=10)
 score2_pca <- res2_pca$u %*% diag(res2_pca$d)
+set.seed(2020)
 pca2_tsne <- Rtsne::Rtsne(score2_pca)$Y
 pca2_tsne <- as.data.frame(pca2_tsne)
 colnames(pca2_tsne) <- c('tsne1','tsne2')
@@ -199,6 +206,7 @@ Then we scores each cell by the identified PCs of variation in pseudo-bulk ATAC-
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 res2_bulk <- prcomp(ref_data2_nml, center = T, retx = T)
 coeff2_bulk <- res2_bulk$rotation
+set.seed(2020)
 bulk2_tsne <- Rtsne::Rtsne(t(sc_data2_nml) %*% coeff2_bulk)$Y
 bulk2_tsne <- as.data.frame(bulk2_tsne)
 colnames(bulk2_tsne) <- c('tsne1','tsne2')
@@ -210,7 +218,8 @@ ggplot(bulk2_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label2), shape =
 Finally, we present the t-SNE visualization of latent features extracted by RA3, guided by the aggregatting single cell data.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
-H2_tsne <- Rtsne::Rtsne(t(result2$H[1: (nrow(result2$H)-5), ]))$Y
+set.seed(2020)
+H2_tsne <- Rtsne::Rtsne(t(result2$H[1: (nrow(result2$H)-5), ]))$Y # Here 5 refers to the dimension of the third component
 H2_tsne <- as.data.frame(H2_tsne)
 colnames(H2_tsne) <- c('tsne1', 'tsne2')
 ggplot(H2_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label2), shape = 10, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne")

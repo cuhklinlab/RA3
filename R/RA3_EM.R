@@ -3,16 +3,14 @@
 #' This function is implementing an EM algorithm to estimate parameters of RA3 model.
 #'
 #' @param Y Input single cell count matrix.
-#' @param normalize A logical value indicating whether the output W should be normalized through columns. Corresponding scale would be multiplied onto H if \emph{normalize} is TRUE.
-#' @param ttest A logical value indicating whether a one sample ttest should be done for output H2 components.
 #' @param K1,K2,K3 Number of components consisted in RA3 model.
 #' @param Gamma Initial matrix of parameter matrix \eqn{\Gamma}.
 #' @param A Initial matrix of precision matrix A.
 #' @param W Initial matrix of parameter matrix W, a warm start is recommended in \code{\link{runRA3}}.
 #' @param sigma_s Intial value of parameter \eqn{\sigma^2}, a warm start is recommended in \code{\link{runRA3}}.
 #' @return A list containing the following components:
-#' \item{H}{the estimated latent variable H.}
-#' \item{W}{the estimated matrix of parameter matrix W.}
+#' \item{H}{the extracted latent features H.}
+#' \item{W}{the estimated parameter matrix W.}
 #' \item{Beta}{the estimated covariance parameter vector \eqn{\beta}.}
 #' \item{Gamma}{the estimated indicator matrix \eqn{\Gamma}.}
 #' \item{A}{the estimated precision matrix A.}
@@ -20,7 +18,7 @@
 #' \item{lgp}{the largest log posterior value when EM algorithm converges.}
 #'
 #' @import pracma
-RA3_EM <- function(Y,normalize,ttest,K1,K2,K3,Gamma,A,W,sigma_s){
+RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
   pmt <- proc.time()[3]
   res <- list()
 
@@ -141,17 +139,14 @@ RA3_EM <- function(Y,normalize,ttest,K1,K2,K3,Gamma,A,W,sigma_s){
       break
     }
   }
-
+  
   # Normalize
-  if (normalize == TRUE) {
     scale <- sqrt(diag(t(res$W) %*% res$W))
     res$W <- res$W / pracma::repmat(scale,p,1)
     res$H <- res$H * matrix(scale,K,n)
-  }
 
-  # t_test for outputing H
-  if (ttest == TRUE) {
-    H2_ind <- rep(0,K2)
+  # t_test and truncate H2
+  H2_ind <- rep(0,K2)
     for (k in 1:K2) {
       H_ttest <- stats::t.test(res$H[(K1+k), ])
       if (H_ttest$p.value <= 0.05){
@@ -159,8 +154,21 @@ RA3_EM <- function(Y,normalize,ttest,K1,K2,K3,Gamma,A,W,sigma_s){
       } else
         H2_ind[k] <- 0
     }
-    H_ind <- c(rep(1,K1), H2_ind, rep(1,K3))
-    res$H <- res$H[which(H_ind == 1), ]
+  
+  if (sum(H2_ind==1)!=0) {
+    sparse_index_left <- which(H2_ind == 1)
+    K2_left <- length(sparse_index_left)
+    H2_trun <- res$H[K1+sparse_index_left, ]
+    for (k in 1:K2_left){
+    TEP = H2_trun[k,]
+    TEP[TEP >= quantile(TEP,0.95,type=5)] <- quantile(TEP,0.95,type = 5)
+    TEP[TEP <= quantile(TEP,0.05,type=5)] <- quantile(TEP,0.05,type = 5)
+    H2_trun[k,] = TEP
+    }
+    res$H <- rbind(res$H[1:K1,], H2_trun)
+  }
+  else {
+    res$H <- res$H[1:K1,]
   }
 
   pracma::fprintf('\nSetting\nN: %d\tP: %d\tK: %d\tTime: %0.1fs\tmax_log_p: %s\n',n,p,K,proc.time()[3]-pmt,as.character(max(log_p)), file = "")

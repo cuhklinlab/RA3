@@ -6,8 +6,6 @@
 #' @param ref_data reference data matrix, the columns should refer to features/regioins and rows refer to observations.
 #' @param K2 the number of components in RA3's second part, the default value is K2 = 5.
 #' @param K3 the number of components in RA3's third part, the default value is K3 = 5.
-#' @param normalize a logical value indicating whether the output H should be normalized, the default value is set TRUE.
-#' @param ttest a logical value indicating whether the output H2 should take a one sample t-test to select most informative components, the default value is set TRUE.
 #' @return A list containing the following components:
 #' \item{H}{the extracted latent features H.}
 #' \item{W}{the estimated matrix of parameter matrix W.}
@@ -23,16 +21,11 @@
 #' @import irlba
 #' @export
 
-runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5, normalize=TRUE, ttest=TRUE){
+runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
   Y <- sc_data # p by n
   bulk_mat <- ref_data # n_bulk by p
 
   # Data Preprocessing
-  # peak selection with ratio 0.03
-  filter_peak = apply((t(Y)>=1),2,sum) >= floor(dim(Y)[2]*0.03)
-  Y = Y[filter_peak, ]
-  bulk_mat = bulk_mat[ ,filter_peak]
-
   # TF-IDF
   nfreqs = Y / pracma::repmat(apply(Y, 2, sum), dim(Y)[1], 1)
   Y_mat = nfreqs * t(pracma::repmat(log(1 + dim(Y)[2]) / apply(Y,1,sum), dim(Y)[2], 1))
@@ -103,6 +96,6 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5, normalize=TRUE, ttest=TRUE
 
   # Run
   # result <- RA3_EM(Y_mat,theta,sigma,sigma1,sigma2,K1,K2,K3,Gamma_PCA,A_PCA,W_PCA,sigma_setting,H_PCA,X,Beta,res_path)
-   result <- RA3_EM(Y_mat,normalize,ttest,K1,K2,K3,Gamma_PCA,A_PCA,W_PCA,sigma_setting)
+   result <- RA3_EM(Y_mat,K1,K2,K3,Gamma_PCA,A_PCA,W_PCA,sigma_setting)
    return(result)
   }
