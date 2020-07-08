@@ -1,32 +1,32 @@
-# RA3
-RA3 method for integrative analysis of single cell ATAC sequence data.
-
-## System requirements
-### Hardware requirements
-'RA3' package only needs a standard computer with enough RAM to support the operations defined by a user.
-
-### Software requirements
-The package has been tested on the following systems: 
-- Linux:
-- macOS: Catalina (10.15.4), 
-- Windows: Windows 10
+# The R-based implementation of RA3
+The R-based implementation of "A reference-guided approach for epigenetic characterization of single cells". The source code for the reproduction of results in the manuscript can be found [here](https://github.com/cuhklinlab/RA3_source).
 
 ## Installation guide
-You can install the released version of package RA3 from Github:
+Install the released version of RA3 package from Github:
 ```javascript
 devtools::install_github("cuhklinlab/RA3")
 ```
 
-It will take around 1 minute to install package RA3 on a standard MacBook Pro computer (8 GB RAM, 4 cores@2.4 GHz) and internet of speed 50 Mbps. 
+It will take a few minutes to install the **RA3** package, mainly for preparing the embedded demo-data. 
 
 ## Funcitons
-This package includes following functions:
-- `runRA3` Run RA3 for integrative analysis of scATAC-seq data. 
-- `Dataprep` Normalize count matrix. This funciton is optional for normalization of runRA3's input count matrix. It implements TF-IDF for matrix normailization.
-- `RA3_EM` EM algorithm for RA3. This function is implementing an EM algorithm to estimate parameters of RA3 model.
+This package includes following main functions:
+- `runRA3` runs RA3 for the analysis of single-cell chromatin accessibility sequencing data. 
+- `Dataprep` normalizes the input count matrix by TF-IDF.
+- `RA3_EM` performs an EM algorithm to estimate parameters of the RA3 model.
 
 ## Documentation
 Please check the [vigenette](https://github.com/cuhklinlab/RA3/wiki) for a tutorial. Two examples are contained for a quick start of RA3.
+
+## System requirements
+### Software requirements
+The package has been tested on the following operating systems: 
+- Linux: CentOS Linux release 7.7.1908
+- macOS: Catalina (10.15.4)
+- Windows: Windows 10
+
+### Hardware requirements
+The package has been tested on both Normal Personal Computer and High-Performance Computing Cluster.
 
 ## License
 This package is built under license **GNU GENERAL PUBLIC LICENSE (GPL)**.
