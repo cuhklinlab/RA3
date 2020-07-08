@@ -1,13 +1,25 @@
 # RA3
 RA3 method for integrative analysis of single cell ATAC sequence data.
 
-## Installation
-You can install the released version of package Ra3 from Github:
+## System requirements
+### Hardware requirements
+'RA3' package only needs a standard computer with enough RAM to support the operations defined by a user.
+
+### Software requirements
+The package has been tested on the following systems: 
+- Linux:
+- macOS: Catalina (10.15.4), 
+- Windows: Windows 10
+
+## Installation guide
+You can install the released version of package RA3 from Github:
 ```javascript
 devtools::install_github("cuhklinlab/RA3")
 ```
-## Main funcitons
 
+It will take around 1 minute to install package RA3 on a standard MacBook Pro computer (8 GB RAM, 4 cores@2.4 GHz) and internet of speed 50 Mbps. 
+
+## Funcitons contained
 This package includes following functions:
 - `runRA3` Run RA3 for integrative analysis of scATAC-seq data. 
 - `Dataprep` Normalize count matrix. This funciton is optional for normalization of runRA3's input count matrix. It consists of two steps:
