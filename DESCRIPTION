@@ -1,12 +1,12 @@
 Package: RA3
 Type: Package
-Title: What the Package Does (Title Case)
+Title: The R-based implementation of "A reference-guided approach for epigenetic characterization of single cells".
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Shengquan Chen, Guan'ao Yan, Wenyu Zhang, Jinzhao Li, Rui Jiang and Zhixiang Lin
+Maintainer: Guan'ao Yan <gayan@ucla.edu>
+Description: RA3 is a R/Bioconductor package for the integrative analysis of scCAS data, which could be used to extract effective latent features of single cells for downstream analyses such as visualization, clustering, and trajectory inference. The name RA3 refers to reference-guided analysis of scCAS data.
+    RA3 characterizes the high-dimensional sparse scCAS data as three components, including shared biological variation in single-cell and reference data, unique biological variation in single cells that separates distinct or rare cell types from the other cells, and other variations such as technical variation. It could use reference built from bulk ATAC-seq data, bulk DNase-seq data, an accessibility annotation tool (Chen et al., 2019), aggregated scATAC-seq data, etc.
+License: GNU GENERAL PUBLIC LICENSE (GPL)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
