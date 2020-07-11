@@ -109,12 +109,7 @@ theme_set(theme_gray() +
                 axis.title = element_text(size=18)
               )
   )
-res_pca <- irlba::irlba(t(sc_data_nml), nv=10)
-score_pca <- res_pca$u %*% diag(res_pca$d)
-set.seed(2020)
-pca_tsne <- Rtsne::Rtsne(score_pca)$Y
-pca_tsne <- as.data.frame(pca_tsne)
-colnames(pca_tsne) <- c('tsne1','tsne2')
+pca_tsne <- RA3::RA3_pcatsne(sc_data_nml, rand_seed = 2020)
 ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "pca tsne")
 
 ```
@@ -122,12 +117,8 @@ ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20
 Then we scores each cell by the identified PCs of variation in pseudo-bulk ATAC-seq samples, and deploy t-SNE directly onto the obtaned scores.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
-res_bulk <- prcomp(ref_data_nml, center = T, retx = T)
-coeff_bulk <- res_bulk$rotation
-set.seed(2020)
-bulk_tsne <- Rtsne::Rtsne(t(sc_data_nml) %*% coeff_bulk)$Y
-bulk_tsne <- as.data.frame(bulk_tsne)
-colnames(bulk_tsne) <- c('tsne1','tsne2')
+bulk_tsne <- RA3_RefProj(ref_data_nml,sc_data_nml,rand_seed = 2020)
+
 ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title="bulk projection tsne")
 ```
 
@@ -225,12 +216,11 @@ theme_set(theme_gray() +
               axis.title = element_text(size=18)
             )
 )
-res_pca <- irlba::irlba(t(sc_data_nml), nv=10)
-score_pca <- res_pca$u %*% diag(res_pca$d)
-set.seed(23)
-pca_tsne <- Rtsne::Rtsne(score_pca)$Y
-pca_tsne <- as.data.frame(pca_tsne)
-colnames(pca_tsne) <- c('tsne1','tsne2')
+```
+
+```{r, eval=TRUE}
+pca_tsne <- RA3_pcatsne(sc_data_nml, rand_seed=2020)
+
 ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "pca tsne") + scale_color_manual(values = legend_cellType_color_rgb)
 
 ```
@@ -238,12 +228,8 @@ ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20
 Then we scores each cell by the identified PCs of variation in bulk ATAC-seq samples, and deploy t-SNE directly onto the obtained scores. However, this reference guided approach still can not even distinguish CLP from the other cells while simple PCA can.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
-res_bulk <- prcomp(ref_data_nml, center = T, retx = T)
-coeff_bulk <- res_bulk$rotation
-set.seed(23)
-bulk_tsne <- Rtsne::Rtsne(t(sc_data_nml) %*% coeff_bulk)$Y
-bulk_tsne <- as.data.frame(bulk_tsne)
-colnames(bulk_tsne) <- c('tsne1','tsne2')
+bulk_tsne <- RA3_RefProj(ref_data_nml,sc_data_nml)
+
 ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title="bulk projection tsne") + scale_color_manual(values = legend_cellType_color_rgb)
 ```
 
@@ -252,10 +238,11 @@ ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 2
 We use a t-SNE for visualization of the RA3-obtained latent features **H**.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
-set.seed(23)
+set.seed(2020)
 H_tsne <- Rtsne::Rtsne(t(result$H))$Y
 H_tsne <- as.data.frame(H_tsne)
 colnames(H_tsne) <- c('tsne1', 'tsne2')
+
 ggplot(H_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne") + scale_color_manual(values = legend_cellType_color_rgb)
 
 ```
@@ -280,7 +267,7 @@ We implemented Slingshot for the trajectory inference. The inputs for Slingshot 
 To do trajectory inference, one can simpily use function `RA3_TrajInf`. For documentation of this function, try `? RA3_TrajInf`. 
 
 ```{r,eval=TRUE, results='hide', message=FALSE}
-trajinf <- RA3_TrajInf(result$H, Seurat_louvain, rand_seed = 22)
+trajinf <- RA3_TrajInf(result$H, Seurat_louvain, rand_seed = 2020)
 ```
 
 Based on the estimated curve, one can visualize the estimated cell lineages using following chunk.
@@ -345,7 +332,7 @@ d = vegdist(result_motif$top_devs, method = "euclidean", na.rm = TRUE)
 col.clus = hclust(d, "centroid")
 ```
 
-Plot the heatmap using estimated labels.
+Plot the heatmap using true labels.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 heatmap.2(t(result_motif$top_devs), dendrogram='column', Rowv=FALSE, Colv=as.dendrogram(col.clus), trace='none', col = scalebluered, density.info = "none", RowSideColors = cells_colors_rgb, margin = c(10, 1))
@@ -353,7 +340,7 @@ legend("bottomleft", legend = label,
        col = legend_cellType_color_rgb, border=FALSE, bty="n", y.intersp = 0.7, cex=0.7, pch = 15)
 ```
 
-Plot the heatmap using true labels.
+Plot the heatmap using estimated labels.
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 # Plot using true labels

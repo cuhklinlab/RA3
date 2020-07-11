@@ -305,6 +305,7 @@ getClusterSpecificPvalue <- function(data, cluster, offset, landmark=NULL, maxit
 #' @importFrom BSgenome.Hsapiens.UCSC.hg19 BSgenome.Hsapiens.UCSC.hg19
 #' @importFrom IRanges IRanges
 #' @importFrom GenomicRanges GRanges
+#' @importFrom S4Vectors SimpleList
 #' @export
 RA3_motif <- function(peaks, label_true, label_est, sc_mat, cluster_peak_num=1000, motif_num=50){
 
@@ -349,7 +350,7 @@ RA3_motif <- function(peaks, label_true, label_est, sc_mat, cluster_peak_num=100
   colnames(matrix_select)=1:ncol(matrix_select)
   
   
-  frag_counts = SummarizedExperiment::SummarizedExperiment(assays=SimpleList(counts=matrix_select), rowRanges=peaks.gr, colData=colData)
+  frag_counts = SummarizedExperiment::SummarizedExperiment(assays=S4Vectors::SimpleList(counts=matrix_select), rowRanges=peaks.gr, colData=colData)
   frag_counts = chromVAR::addGCBias(frag_counts, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)
   motifs <- chromVAR::getJasparMotifs()
   motifs.matched = motifmatchr::matchMotifs(motifs, frag_counts, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)
