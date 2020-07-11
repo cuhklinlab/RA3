@@ -10,11 +10,16 @@ devtools::install_github("cuhklinlab/RA3")
 
 It will take a few minutes to install the **RA3** package, mainly for preparing the embedded demo-data. 
 
-## Funcitons
+## Functions
 This package includes following main functions:
 - `runRA3` runs RA3 for the analysis of single-cell chromatin accessibility sequencing data. 
 - `Dataprep` normalizes the input count matrix by TF-IDF.
 - `RA3_EM` performs an EM algorithm to estimate parameters of the RA3 model.
+- `RA3_clustering` deploys louvain clustering on the output of RA3.
+- `RA3_TrajInf` does trajectory inference based on the output of RA3.
+- `RA3_motif` runs motif enrichment based on the output of RA3.
+- `RA3_pcatsne` deploys PCA and t-SNE for dimension reduction on normalized scCAS data.
+- `RA3_RefProj` deploys a reference projection approach on the TF-IDF normalized scCAS data, then uses t-SNE for further dimension reduction.
 
 ## Documentation
 Please check the [vigenette](https://github.com/cuhklinlab/RA3/wiki) for a tutorial. Two examples are contained for a quick start of RA3.
