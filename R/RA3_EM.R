@@ -17,7 +17,7 @@
 #' \item{sigma_s}{the estimated \eqn{\sigma^2}.}
 #' \item{lgp}{the largest log posterior value when EM algorithm converges.}
 #'
-#' @import pracma
+#' @importFrom pracma fprintf repmat
 RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
   pmt <- proc.time()[3]
   res <- list()
@@ -37,7 +37,7 @@ RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
     sigma_s <- sigma_s[1]
   }
   MAXIte <- 5000
-  err <- 1e-5
+  err <- 1e-6
 
   Qy <- rep(-Inf, MAXIte)
   Qw <- rep(-Inf, MAXIte)
@@ -46,7 +46,7 @@ RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
   log_p <- rep(-Inf, MAXIte)
   diff_log_Q <- rep(-Inf, MAXIte)
   Q_H <- rep(-Inf, MAXIte)
-  max_A <- c(1e12*rep(1,K1), 1e12*rep(1,K2), 1e12*rep(1,K3))
+  max_A <- c(1e12*rep(1,K2), 1e12*rep(1,K3))
   cont <- rep(0, n)
   phi_gamma_0 <- tau0^-2
   phi_gamma_1 <- tau1^-2

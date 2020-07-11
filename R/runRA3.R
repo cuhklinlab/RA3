@@ -17,8 +17,8 @@
 #' @examples
 #' result <- runRA3(sc_example, reference_example)
 #' result <- runRA3(sc_example, reference_example, 10, 5)
-#' @import pracma
-#' @import irlba
+#' @importFrom pracma repmat
+#' @importFrom irlba irlba
 #' @export
 
 runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){

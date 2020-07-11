@@ -8,7 +8,7 @@
 #' @return A list containing following components:
 #' \item{sc_data}{Normalized scATAC-seq count matrix with selected features.}
 #' \item{ref_data}{Normalized reference count matrix with selected features.}
-#' @import pracma
+#' @importFrom pracma repmat
 #' @export
 Dataprep <-  function(sc_data, ref_data){
   Y <- sc_data # p by n
