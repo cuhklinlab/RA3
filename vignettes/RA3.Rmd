@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, include=FALSE}
-library(RA3)
-```
+# ```{r setup, include=FALSE}
+# library(RA3)
+# ```
 
 # Installation
 You can install the released version of package Ra3 from Github:
@@ -52,11 +52,17 @@ In this vignette, we will show two example using RA3 for integrative analysis. R
 
 ## A. RA3 on scATAC data guided by aggregating single-cell data
 
-Besides using abundant bulk data as reference, we also display an example which established a pseudo-bulk reference data by averaging single cells of the same ground-truth biological cell type. 
+First, load package RA3:
+
+```{r}
+library(RA3)
+```
+
+This example established a pseudo-bulk reference data by averaging single cells of the same ground-truth biological cell type. 
 
 ### Input the data
 
-Here we load the already established pseudo-bulkk reference data *forebrain_bulk_mat* as reference data for RA3, and *forebrain_sc_mat* as scATAC-seq count matrix.
+Here we load the already established pseudo-bulk reference data *forebrain_bulk_mat* as reference data for RA3, and *forebrain_sc_mat* as scATAC-seq count matrix.
 
 ```{r, eval=TRUE,message=FALSE,results='hide', fig.height=4, fig.width=5}
 sc_data <- forebrain_sc_mat
@@ -143,7 +149,7 @@ In this example we want to show RA3 could take advantages of abundant bulk data.
 
 ### Input data
 
-First, laod package RA3:
+First, load package RA3:
 
 ```{r}
 library(RA3)
@@ -154,6 +160,7 @@ We would use main function `runRA3()` to estimate a RA3 model, the input data co
 ```{r}
 sc_data <- donorBM0828_sc_mat
 ref_data <- donorBM0828_bulk_mat
+cell_label <- donorBM0828_label_mat
 ```
 
 ### Building the models
@@ -189,21 +196,42 @@ First we normalize data with TF-IDF by the data-preprocess function `Dataprep` o
 data_nml <- Dataprep(sc_data, ref_data)
 sc_data_nml <- data_nml$sc_data
 ref_data_nml <- data_nml$ref_data
-cell_label <- donorBM0828_label_mat
-
 ```
 
 To illustrate RA3's effectiveness, we first use PCA to obtain the latent features on the normalized single-cell data, which shows unsatisfactory performance that only slightly separates cells of CLP and MEP from the other cells. 
 
 ```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
 library(ggplot2)
+
+# Set color pallete same as the original study of human hematopoietic cells
+cellTypeAll_U <- c('CLP','CMP','GMP','HSC','LMPP','MEP','MPP')
+legend_cellType_color_rgb <- c("#98D9E9", "#FFC179", "#FFA300", "#00441B", "#00AF99", "#F6313E", "#46A040")
+color_map <- hash::hash(cellTypeAll_U, legend_cellType_color_rgb)
+cells_colors_rgb <- hash::values(color_map, keys=cell_label )
+
+# Set color palette, using default palletes like 'Dark2' from RColorBrewer. 
+# cellTypeAll_U <- c('CLP','CMP','GMP','HSC','LMPP','MEP','MPP')
+# legend_cellType_color_rgb <- brewer.pal(length(unique(cell_label)), name="Dark2")
+# color_map <- hash(cellTypeAll_U, legend_cellType_color_rgb)
+# cells_colors_rgb <- hash::values(color_map, keys=cell_label)
+    
+# Configuration for the plot
+theme_set(theme_gray() +
+            theme(
+              axis.line = element_line(size=0.5),
+              panel.background = element_rect(fill=NA,size=rel(20)),
+              panel.grid.minor = element_line(colour = NA),
+              axis.text = element_text(size=16),
+              axis.title = element_text(size=18)
+            )
+)
 res_pca <- irlba::irlba(t(sc_data_nml), nv=10)
 score_pca <- res_pca$u %*% diag(res_pca$d)
 set.seed(23)
 pca_tsne <- Rtsne::Rtsne(score_pca)$Y
 pca_tsne <- as.data.frame(pca_tsne)
 colnames(pca_tsne) <- c('tsne1','tsne2')
-ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "pca tsne")
+ggplot(pca_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "pca tsne") + scale_color_manual(values = legend_cellType_color_rgb)
 
 ```
 
@@ -216,7 +244,7 @@ set.seed(23)
 bulk_tsne <- Rtsne::Rtsne(t(sc_data_nml) %*% coeff_bulk)$Y
 bulk_tsne <- as.data.frame(bulk_tsne)
 colnames(bulk_tsne) <- c('tsne1','tsne2')
-ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title="bulk projection tsne")
+ggplot(bulk_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title="bulk projection tsne") + scale_color_manual(values = legend_cellType_color_rgb)
 ```
 
 #### Visualization of RA3
@@ -228,11 +256,112 @@ set.seed(23)
 H_tsne <- Rtsne::Rtsne(t(result$H))$Y
 H_tsne <- as.data.frame(H_tsne)
 colnames(H_tsne) <- c('tsne1', 'tsne2')
-ggplot(H_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne")
+ggplot(H_tsne) + geom_point(aes(tsne1, tsne2, colour = cell_label), shape = 20, position = ggplot2::position_jitter()) + labs(title = "RA3 tsne") + scale_color_manual(values = legend_cellType_color_rgb)
 
 ```
 
 RA3 introduces a spike-and-slab setting which detects directions that lead to good separation of the cells but not the direction with large variation considering the technical variation is strong. The first sparse component in spike-and-slab setting successfully detects cells of CLP, and RA3 thus achieves superior performance than other reference-guided approaches. An intuitive understanding is that the direction which separates a small number of cells from the rest more likely captures biological variation, given that the rare cell types in single-cell data are likely missing in bulk data.
+
+### Cell clustering
+
+Cell clustering could be deployed on the low dimensional representation output by RA3. Function `RA3_clustering` uses package Seurat's louvain clustering method.
+
+```{r, eval=TRUE}
+Seurat_louvain <- RA3_clustering(result$H, length(unique(cell_label)))
+```
+### Downstream analysis
+
+Other than data visualization and cell clustering, the output of RA3 can also be implemented in downstream analyses including trajectory inference and motif enrichment analysis. 
+
+#### Trajectory inference
+
+We implemented Slingshot for the trajectory inference. The inputs for Slingshot include the low-dimensional representation provided by RA3 and the cluster labels obtained from RA3 +  Louvain clustering, and the output for Slingshot are the smooth curves representing the estimated cell lineages. 
+
+To do trajectory inference, one can simpily use function `RA3_TrajInf`. For documentation of this function, try `? RA3_TrajInf`. 
+
+```{r,eval=TRUE, results='hide', message=FALSE}
+trajinf <- RA3_TrajInf(result$H, Seurat_louvain, rand_seed = 22)
+```
+
+Based on the estimated curve, one can visualize the estimated cell lineages using following chunk.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+# Load necessary packages
+suppressPackageStartupMessages({
+  library(RColorBrewer)
+  library(hash)
+  library(ggplot2)
+  })
+
+
+
+# Plot cell lineage
+slingshot::plot(trajinf$tsne,pch=20,col=cells_colors_rgb ,xlab="tsne1",ylab="tsne2")
+slingshot::lines(trajinf$sds.new, lwd = 3)
+par(xpd=TRUE)
+legend( "topright",legend=cellTypeAll_U , pch=20,
+       col=legend_cellType_color_rgb, box.lty=0)
+
+```
+
+#### Motif enrichment analysis
+
+For the motif enrichment analysis, we first obtained the cluster labels by RA3 + Louvain clustering, and then identified the cluster-specific peaks by the hypothesis testing procedure in scABC. We selected the top 1000 peaks with the smallest p-values for each cluster, and then applied chromVAR to infer the enriched transcription factor (TF) binding motifs within these peaks. Visualization of the top 50 most variable TF binding motifs is shown.
+
+To do motif analysis, use function `RA3_motif`. This function needs peak information for scCAS data. We have *donorBM0828_peak_vec* in RA3 package as a demo, which contains peak information for scATAC-seq data donorBM0828.
+
+```{r,eval=TRUE, results='hide', message=FALSE}
+peaks <- donorBM0828_peak_vec
+louvain <- as.numeric(Seurat_louvain) 
+
+result_motif <- RA3_motif(peaks, cell_label, louvain, sc_data, cluster_peak_num=1000, motif_num=50)
+```
+
+Based on the chromVAR deviations, one can make the heatmap using following chunks.
+
+```{r,eval=TRUE, results='hide', message=FALSE}
+# Set color for the heatmap
+suppressPackageStartupMessages({
+  library(gplots) 
+  library(RColorBrewer)
+  library(hash)
+  library(vegan)
+
+})
+scalebluered <- colorRampPalette(c("blue", "white", "red"), space = "rgb")(256)
+cols = brewer.pal(7, "Dark2")[1:7]
+rowcols_louvain = cols[as.numeric(Seurat_louvain) ]  
+rowcols_louvain = rowcols_louvain[result_motif$metaDataInd]
+
+
+cellTypeAll_U <- c('CLP','CMP','GMP','HSC','LMPP','MEP','MPP')
+legend_cellType_color_rgb <- c("#98D9E9", "#FFC179", "#FFA300", "#00441B", "#00AF99", "#F6313E", "#46A040")
+color_map <- hash(cellTypeAll_U, legend_cellType_color_rgb)
+cells_colors_rgb <- hash::values(color_map, keys=cell_label)
+cells_colors_rgb = cells_colors_rgb[result_motif$metaDataInd]
+label = cellTypeAll_U
+
+d = vegdist(result_motif$top_devs, method = "euclidean", na.rm = TRUE)
+col.clus = hclust(d, "centroid")
+```
+
+Plot the heatmap using estimated labels.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+heatmap.2(t(result_motif$top_devs), dendrogram='column', Rowv=FALSE, Colv=as.dendrogram(col.clus), trace='none', col = scalebluered, density.info = "none", RowSideColors = cells_colors_rgb, margin = c(10, 1))
+legend("bottomleft", legend = label, 
+       col = legend_cellType_color_rgb, border=FALSE, bty="n", y.intersp = 0.7, cex=0.7, pch = 15)
+```
+
+Plot the heatmap using true labels.
+
+```{r, eval=TRUE, fig.align='center', fig.height=4, fig.width=5}
+# Plot using true labels
+heatmap.2(t(result_motif$top_devs), dendrogram='column', Rowv=FALSE, Colv=as.dendrogram(col.clus), trace='none', col = scalebluered, density.info = "none", RowSideColors = rowcols_louvain, margin = c(10, 1))
+legend("bottomleft", legend = c(paste0("cluster ", 1:7)), 
+       col = cols, border=FALSE, bty="n", y.intersp = 0.7, cex=0.7, pch = 15)
+
+```
 
 
 # References

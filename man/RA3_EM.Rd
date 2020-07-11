@@ -4,14 +4,10 @@
 \alias{RA3_EM}
 \title{EM algorithm for RA3}
 \usage{
-RA3_EM(Y, normalize, ttest, K1, K2, K3, Gamma, A, W, sigma_s)
+RA3_EM(Y, K1, K2, K3, Gamma, A, W, sigma_s)
 }
 \arguments{
 \item{Y}{Input single cell count matrix.}
-
-\item{normalize}{A logical value indicating whether the output W should be normalized through columns. Corresponding scale would be multiplied onto H if \emph{normalize} is TRUE.}
-
-\item{ttest}{A logical value indicating whether a one sample ttest should be done for output H2 components.}
 
 \item{K1, K2, K3}{Number of components consisted in RA3 model.}
 
@@ -25,8 +21,8 @@ RA3_EM(Y, normalize, ttest, K1, K2, K3, Gamma, A, W, sigma_s)
 }
 \value{
 A list containing the following components:
-\item{H}{the estimated latent variable H.}
-\item{W}{the estimated matrix of parameter matrix W.}
+\item{H}{the extracted latent features H.}
+\item{W}{the estimated parameter matrix W.}
 \item{Beta}{the estimated covariance parameter vector \eqn{\beta}.}
 \item{Gamma}{the estimated indicator matrix \eqn{\Gamma}.}
 \item{A}{the estimated precision matrix A.}

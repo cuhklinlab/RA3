@@ -4,7 +4,7 @@
 \alias{runRA3}
 \title{Run RA3 for integrative analysis of scATAC-seq data}
 \usage{
-runRA3(sc_data, ref_data, K2 = 5, K3 = 5, normalize = TRUE, ttest = TRUE)
+runRA3(sc_data, ref_data, K2 = 5, K3 = 5)
 }
 \arguments{
 \item{sc_data}{scATAC-seq count matrix, the rows should refer to features/regions and columns refer to cells.}
@@ -14,10 +14,6 @@ runRA3(sc_data, ref_data, K2 = 5, K3 = 5, normalize = TRUE, ttest = TRUE)
 \item{K2}{the number of components in RA3's second part, the default value is K2 = 5.}
 
 \item{K3}{the number of components in RA3's third part, the default value is K3 = 5.}
-
-\item{normalize}{a logical value indicating whether the output H should be normalized, the default value is set TRUE.}
-
-\item{ttest}{a logical value indicating whether the output H2 should take a one sample t-test to select most informative components, the default value is set TRUE.}
 }
 \value{
 A list containing the following components:
