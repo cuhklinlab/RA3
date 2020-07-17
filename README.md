@@ -10,7 +10,7 @@ devtools::install_github("cuhklinlab/RA3")
 ```
 
 To fully use **RA3**, package **Seurat** is needed for current version. Install **Seurat** using the following chunk, or check [here](https://satijalab.org/seurat/install.html).
-```javascript
+```r
 # Enter commands in R (or R studio, if installed)
 install.packages('Seurat')
 ```
