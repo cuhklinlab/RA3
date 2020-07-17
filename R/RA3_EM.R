@@ -158,7 +158,7 @@ RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
   if (sum(H2_ind==1)!=0) {
     sparse_index_left <- which(H2_ind == 1)
     K2_left <- length(sparse_index_left)
-    H2_trun <- matrix(res$H[K1+sparse_index_left, ],sparse_index_left,n)
+    H2_trun <- matrix(res$H[K1+sparse_index_left, ],K2_left,n)
     for (k in 1:K2_left){
     TEP = H2_trun[k,]
     TEP[TEP >= quantile(TEP,0.95,type=5)] <- quantile(TEP,0.95,type = 5)

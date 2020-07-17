@@ -14,7 +14,7 @@ RA3_clustering <- function(H, n_cluster){
   H_obj <- Seurat::CreateSeuratObject(counts = H)
   H_obj <- Seurat::ScaleData(H_obj, features = rownames(H_obj))
   H_obj <- Seurat::RunPCA(H_obj, features = rownames(H_obj))
-  H_SNN <- Seurat::FindNeighbors(H_obj, k.param = 15, features = rownames(H_obj), dims = 1:(nrow(H)-1))
+  H_SNN <- Seurat::FindNeighbors(H_obj, k.param = 20, features = rownames(H_obj), dims = 1:(nrow(H)-1))
   # clusterlouvain2 <- getNClusters(H_SNN, n_clusters = n_cluster) 
   
   min_res <- 0

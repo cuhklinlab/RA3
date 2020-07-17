@@ -28,7 +28,7 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
   # Data Preprocessing
   # TF-IDF
   nfreqs = Y / pracma::repmat(apply(Y, 2, sum), dim(Y)[1], 1)
-  Y_mat = nfreqs * t(pracma::repmat(log(1 + dim(Y)[2]) / apply(Y,1,sum), dim(Y)[2], 1))
+  Y_mat = nfreqs * t(pracma::repmat(log(1 + dim(Y)[2] / rowSums(Y)), dim(Y)[2], 1))
 
   # Calculate Initialization Value for the Algorithm
   # pca for reference

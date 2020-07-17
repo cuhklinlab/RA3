@@ -22,6 +22,7 @@ RA3_TrajInf <- function(DRres_mat,cluster_assign,rand_seed = 23){
   lin1 <- slingshot::getLineages(DRres_mat, cluster_assign)
   crv1 <- slingshot::getCurves(lin1)
   result$sds.new <- slingshot::embedCurves(crv1, result$tsne, shrink.method='density')
+
   return(result)
 
 }
