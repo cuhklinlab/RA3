@@ -4,7 +4,7 @@ The source code for the reproduction of results in the manuscript can be found [
 
 ## Installation guide
 Install the released version of **RA3** package using devtools from Github:
-```javascript
+```r
 install.packages("devtools")
 devtools::install_github("cuhklinlab/RA3")
 ```
@@ -19,7 +19,7 @@ install.packages('Seurat')
 At this point, there might be some missing dependicies from CRAN or Bioconductor. 
 
 To install missing dependencies from Bioconductor, use the following chunk:
-```javascript
+```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(c('chromVAR', 'motifmatchr', 'SummarizedExperiment', 'BSgenome.Hsapiens.UCSC.hg19', 'slingshot')) 
