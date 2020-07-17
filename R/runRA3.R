@@ -32,18 +32,18 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
 
   # Calculate Initialization Value for the Algorithm
   # pca for reference
-  pca_bulk <- prcomp(bulk_mat, center = T, retx = T)
-  coeff <- pca_bulk$rotation
-  score <- pca_bulk$x
-  # Visualization of Reference Projection
-  # bulk_tsne <- Rtsne(t(t(coeff) %*% Y_mat) )
+  K1 <- nrow(bulk_mat)-1
+  
+  bulk_mat_cent <- bulk_mat - repmat(apply(bulk_mat, 2, mean),nrow(bulk_mat),1)
+  pca_bulk <-  irlba::irlba(bulk_mat_cent, nv = K1)
+  coeff <- pca_bulk$v
+  score <- pca_bulk$u %*% diag(pca_bulk$d)
+
 
   # Standardize
   p <- nrow(Y)
   n <- ncol(Y)
-  K1 <- nrow(bulk_mat) - 1
-  # K2 <- 5
-  # K3 <- 5
+
 
   latent_h <- t(coeff) %*% Y_mat
   V_beta <- sqrt(apply(t(latent_h),2,var))
@@ -51,7 +51,6 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
 
   # Good Start of K2 Component
   residual <- Y_mat - coeff %*% (t(coeff) %*% Y_mat)
-  # res_pca <- prcomp(t(residual), center = T, retx = T) # !!! number of components
   res_pca <- irlba::irlba(t(residual), nv = K2)
   coeff_res <- res_pca$v
   score_res <- res_pca$u %*% diag(res_pca$d)
@@ -59,13 +58,11 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
   RM <- score_res_rotate$rotmat
   coeff_res_rotate <- coeff_res[ ,1:K2] %*% RM # p by k
   score_reconst_rotate <- t(residual) %*% coeff_res_rotate # n by k
-  # H2_ini <- score_reconst_rotate %*% diag(sqrt(apply(score_reconst_rotate, 2, var))^(-1))
   W2_ini <- coeff_res_rotate %*% diag(sqrt(apply(score_reconst_rotate, 2, var)))
 
   # Good Start of Sigma
   center_Y_stand <- Y_mat - t(rep(1, ncol(Y_mat)) %*% t(rowMeans(Y_mat)))
   residual_stand = center_Y_stand - coeff %*% (t(coeff) %*% center_Y_stand)
-  # res_stand_pca <- prcomp(t(residual_stand), center = T, retx = T) # !!! number of components
   res_stand_pca <- irlba::irlba(t(residual_stand), nv = 20)
   coeff_res_stand <- res_stand_pca$v
   score_res_stand <- res_stand_pca$u %*% diag(res_stand_pca$d)
@@ -76,7 +73,6 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
 
   res_final <- residual_stand - coeff_stand_rotate %*% t(score_reconst_stand_rotate)
   epsilon_stard = res_final - t(rep(1, ncol(res_final)) %*% t(rowMeans(res_final)))
-  # sigma_setting = psych::tr(t(epsilon_stard) %*% epsilon_stard)/(n*p)
   sigma_setting = sum(epsilon_stard^2)/(n*p)
 
   # Parameters Setting
@@ -86,16 +82,12 @@ runRA3 <- function(sc_data, ref_data, K2 = 5, K3 = 5){
 
   # Initialization
   W1_ini <- init_V[ ,1:K1]
-  # H1_ini <- t(latent_h[1:K1,]) %*% diag(V_beta[1:K1]^(-1))
-  # H_PCA <- t(cbind(H1_ini, H2_ini[,1:K2], matrix(rnorm(n*K3,0,1), n, K3)))
   W_PCA <- cbind(W1_ini, W2_ini[ ,1:K2], matrix(rnorm(p*K3,0,1), p, K3))
   A_PCA <- diag(c(rep(1,K2), rep(1,K3)))
   Gamma_PCA <- matrix(rep(1,K*n), K, n)
   Gamma_PCA[(K1+1):(K2+K1), ] <-  matrix(rep(0, K2*n), K2, n)
- # V_PCA = cbind(init_V[ ,1:K1], matrix(rep(0,p*(K2+K3)), p, K2+K3))
 
   # Run
-  # result <- RA3_EM(Y_mat,theta,sigma,sigma1,sigma2,K1,K2,K3,Gamma_PCA,A_PCA,W_PCA,sigma_setting,H_PCA,X,Beta,res_path)
    result <- RA3_EM(Y_mat,K1,K2,K3,Gamma_PCA,A_PCA,W_PCA,sigma_setting)
    return(result)
   }
