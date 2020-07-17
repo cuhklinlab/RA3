@@ -147,18 +147,18 @@ RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
 
   # t_test and truncate H2
   H2_ind <- rep(0,K2)
-    for (k in 1:K2) {
+  for (k in 1:K2) {
       H_ttest <- stats::t.test(res$H[(K1+k), ])
       if (H_ttest$p.value <= 0.05){
         H2_ind[k] <- 1
       } else
         H2_ind[k] <- 0
     }
-  
+
   if (sum(H2_ind==1)!=0) {
     sparse_index_left <- which(H2_ind == 1)
     K2_left <- length(sparse_index_left)
-    H2_trun <- res$H[K1+sparse_index_left, ]
+    H2_trun <- matrix(res$H[K1+sparse_index_left, ],sparse_index_left,n)
     for (k in 1:K2_left){
     TEP = H2_trun[k,]
     TEP[TEP >= quantile(TEP,0.95,type=5)] <- quantile(TEP,0.95,type = 5)
@@ -166,8 +166,7 @@ RA3_EM <- function(Y,K1,K2,K3,Gamma,A,W,sigma_s){
     H2_trun[k,] = TEP
     }
     res$H <- rbind(res$H[1:K1,], H2_trun)
-  }
-  else {
+  } else {
     res$H <- res$H[1:K1,]
   }
 
