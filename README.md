@@ -3,20 +3,20 @@ The R-based implementation of "A reference-guided approach for epigenetic charac
 The source code for the reproduction of results in the manuscript can be found [here](https://github.com/cuhklinlab/RA3_source).
 
 ## Installation guide
-Install the released version of **RA3** package using devtools from Github:
+Install the released version of RA3 package using devtools from Github:
 ```r
 install.packages("devtools")
 devtools::install_github("cuhklinlab/RA3")
 ```
 
-Package **Seurat** is needed for current version of **RA3**. Install **Seurat** using the following chunk, or check [here](https://satijalab.org/seurat/install.html).
+Package Seurat is needed for current version of RA3. Install Seurat using the following chunk, or check [here](https://satijalab.org/seurat/install.html).
 ```r
 # Enter commands in R (or R studio, if installed)
 install.packages('Seurat')
 ```
 
 ### Troubleshooting dependencies
-At this point, there might be some missing dependicies from CRAN or Bioconductor. 
+At this point, there might be some missing dependencies from CRAN or Bioconductor. 
 
 To install missing dependencies from Bioconductor, use the following chunk:
 ```r
@@ -25,7 +25,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install(c('chromVAR', 'motifmatchr', 'SummarizedExperiment', 'BSgenome.Hsapiens.UCSC.hg19', 'slingshot')) 
 ```
 
-It will take a few minutes to install the **RA3** package, mainly for preparing the embedded demo-data. 
+It will take a few minutes to install the RA3 package, mainly for preparing the embedded demo-data. 
 
 ## Functions
 This package includes following main functions:
