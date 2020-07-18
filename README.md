@@ -22,7 +22,7 @@ To install missing dependencies from Bioconductor, use the following chunk:
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install(c('chromVAR', 'motifmatchr', 'SummarizedExperiment', 'BSgenome.Hsapiens.UCSC.hg19', 'slingshot')) 
+BiocManager::install(c('chromVAR', 'motifmatchr', 'SummarizedExperiment', 'BSgenome.Hsapiens.UCSC.hg19', 'slingshot', 'JASPAR2016')) 
 ```
 
 It will take a few minutes to install the RA3 package, mainly for preparing the embedded demo-data. 
