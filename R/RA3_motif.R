@@ -306,6 +306,7 @@ getClusterSpecificPvalue <- function(data, cluster, offset, landmark=NULL, maxit
 #' @importFrom IRanges IRanges
 #' @importFrom GenomicRanges GRanges
 #' @importFrom S4Vectors SimpleList
+#' @import JASPAR2016
 #' @export
 RA3_motif <- function(peaks, label_true, label_est, sc_mat, cluster_peak_num=1000, motif_num=50){
 
