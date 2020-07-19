@@ -18,7 +18,7 @@ install.packages('Seurat')
 ### Troubleshooting dependencies
 At this point, there might be some missing dependencies from CRAN or Bioconductor. 
 
-To install missing dependencies from Bioconductor, use the following chunk:
+Installing following packages from Bioconductor requires R version > 4.0.0 and Bioconductor version 3.11. Use following chunk:
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
