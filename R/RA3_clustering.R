@@ -7,6 +7,7 @@
 #' @return \item{Seurat_louvain}{vector containing cell cluster assignment}
 #' @examples
 #' result <- RA3_clustering(H, n_cluster)
+#' @import Seurat
 #' @export
 RA3_clustering <- function(H, n_cluster){
   rownames(H) <- as.character(1:nrow(H))
