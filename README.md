@@ -1,5 +1,7 @@
-https://zenodo.org/badge/DOI/10.5281/zenodo.4581063.svg
 # The R-based implementation of RA3
+![Alt text](https://zenodo.org/badge/265570460.svg)
+<img src="https://zenodo.org/badge/265570460.svg">
+
 The R-based implementation of "A reference-guided approach for epigenetic characterization of single cells".<br/>
 The source code for the reproduction of results in the manuscript can be found [here](https://github.com/cuhklinlab/RA3_source).
 
