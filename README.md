@@ -1,4 +1,5 @@
 # The R-based implementation of RA3
+![Alt text](https://zenodo.org/badge/265570460.svg)
 <img src="https://zenodo.org/badge/265570460.svg">
 
 The R-based implementation of "A reference-guided approach for epigenetic characterization of single cells".<br/>
